@@ -1,0 +1,11 @@
+.idea
+
+#*.pyc
+#venv/
+
+# Secret values
+secrets/*.*
+
+## Outputs
+#**/Pulumi.yaml
+#tmp-*
