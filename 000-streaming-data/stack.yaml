@@ -1,0 +1,22 @@
+name: 000-streaming-data
+description: Streaming Data with Kappa Architecture
+backend: terraform
+resources:
+  notebooks:
+    notebook-000-ingest:
+      source: ./notebooks/sample-000/ingest.py
+    notebook-000-copy:
+      source: ./notebooks/sample-000/copy_static.py
+    notebook-000-latency:
+      source: ./notebooks/sample-000/review_latency.py
+  pipelines:
+    pl-sample-000:  ${include.resources/pl-sample-000.yaml}
+  providers:
+    databricks:
+      host: ${vars.DATABRICKS_HOST}
+      token: ${vars.DATABRICKS_TOKEN}
+environments:
+  dev:
+    variables:
+      env: dev
+      is_dev: True

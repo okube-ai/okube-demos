@@ -1,0 +1,146 @@
+name: pl-sample-000
+
+catalog: ${vars.env}
+target: sandbox
+development: ${vars.is_dev}
+configuration:
+  pipeline_name: pl-sample-000
+
+continuous: False
+
+clusters:
+  - name : default
+    node_type_id: Standard_DS3_v2
+    autoscale:
+      min_workers: 1
+      max_workers: 2
+
+libraries:
+  - notebook:
+      path: /.laktory/pipelines/dlt_brz_template.py
+  - notebook:
+      path: /.laktory/pipelines/dlt_slv_template.py
+  - notebook:
+      path: /.laktory/pipelines/dlt_gld_template.py
+
+access_controls:
+  - group_name: account users
+    permission_level: CAN_VIEW
+  - group_name: role-engineers
+    permission_level: CAN_RUN
+
+# --------------------------------------------------------------------------- #
+# Tables                                                                      #
+# --------------------------------------------------------------------------- #
+
+tables:
+
+  # ------------------------------------------------------------------------- #
+  # Asset Prices                                                              #
+  # ------------------------------------------------------------------------- #
+
+  - name: brz_asset_prices
+    timestamp_key: data.created_at
+    builder:
+      layer: BRONZE
+      as_dlt_view: True
+      event_source:
+        name: asset_price
+        read_as_stream: True
+        producer:
+          name: cryptocompare
+      spark_chain:
+        nodes: []
+
+  - name: slv_asset_prices
+    timestamp_key: created_at
+    builder:
+      layer: SILVER
+      table_source:
+        name: brz_asset_prices
+        read_as_stream: True
+      spark_chain:
+        nodes:
+          - column:
+              name: created_at
+              type: timestamp
+            spark_func_name: coalesce
+            spark_func_args:
+              - data._created_at
+
+          - column:
+              name: base_symbol
+              type: string
+            spark_func_name: coalesce
+            spark_func_args:
+              - data.base_asset_symbol
+
+          - column:
+              name: quote_symbol
+              type: string
+            spark_func_name: coalesce
+            spark_func_args:
+              - data.quote_asset_symbol
+
+          - column:
+              name: pair_symbol
+              type: string
+            spark_func_name: coalesce
+            spark_func_args:
+              - data.pair_symbol
+
+          - column:
+              name: value
+              type: double
+            spark_func_name: coalesce
+            spark_func_args:
+              - data.value
+
+
+  - name: gld_asset_ohlc
+    builder:
+      layer: GOLD
+      table_source:
+        name: slv_asset_prices
+        read_as_stream: True
+        watermark:
+          column: created_at
+          threshold: 15 seconds
+      spark_chain:
+        nodes:
+          - spark_func_name: groupby_and_agg
+            spark_func_kwargs:
+              groupby_columns:
+                - pair_symbol
+              groupby_window:
+                time_column: created_at
+                window_duration: 1 minute
+              agg_expressions:
+                - column:
+                    name: open
+                    type: double
+                  spark_func_name: first
+                  spark_func_args: [value]
+                - column:
+                    name: high
+                    type: double
+                  spark_func_name: max
+                  spark_func_args: [value]
+                - column:
+                    name: low
+                    type: double
+                  spark_func_name: min
+                  spark_func_args: [value]
+                - column:
+                    name: close
+                    type: double
+                  spark_func_name: last
+                  spark_func_args: [value]
+                - column:
+                    name: max_created_at
+                  spark_func_name: max
+                  spark_func_args: [created_at]
+          - column:
+              name: _gold_at
+              type: timestamp
+            spark_func_name: current_timestamp
