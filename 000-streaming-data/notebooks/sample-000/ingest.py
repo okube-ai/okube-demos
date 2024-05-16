@@ -1,3 +1,8 @@
+# Databricks notebook source
+# MAGIC %pip install laktory
+
+# COMMAND ----------
+
 import requests
 import time
 import datetime
@@ -23,7 +28,7 @@ def get_btc_price():
     return (tstamp, data[quote_asset_symbol])
 
 
-for i in range(12*60):
+for i in range(12 * 60):
 
     # ----------------------------------------------------------------------- #
     # Fetch data                                                              #
