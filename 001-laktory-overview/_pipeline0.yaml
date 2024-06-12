@@ -1,0 +1,13 @@
+name: pl-sample-001
+dataframe_type: POLARS
+nodes:
+- name: brz_stock_prices
+  layer: BRONZE
+  source:
+    path: ./data/stock_prices.json
+    format: JSON
+    multiline: True
+    as_stream: false
+  sink:
+    path: ./data/brz_stock_prices.parquet
+    format: PARQUET

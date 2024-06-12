@@ -1,0 +1,52 @@
+name: pl-sample-001
+dataframe_type: POLARS
+nodes:
+- name: brz_stock_prices
+  layer: BRONZE
+  source:
+    path: ./data/stock_prices.json
+    format: JSON
+    multiline: True
+    as_stream: false
+  sink:
+    path: ./data/brz_stock_prices.parquet
+    format: PARQUET
+
+- name: slv_stock_prices
+  layer: SILVER
+  source:
+    node_name: brz_stock_prices
+    as_stream: false
+  sink:
+    path: ./data/slv_stock_prices.parquet
+    format: PARQUET
+  transformer:
+    nodes:
+    - with_columns:
+      - name: created_at
+        type: timestamp
+        sql_expr: data._created_at
+
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+
+      - name: name
+        type: string
+        sql_expr: data.symbol
+
+      - name: open
+        type: double
+        sql_expr: data.open
+
+      - name: close
+        type: double
+        sql_expr: data.close
+
+      - name: low
+        type: double
+        sql_expr: data.low
+
+      - name: high
+        type: double
+        sql_expr: data.high

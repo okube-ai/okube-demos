@@ -1,0 +1,20 @@
+name: 001-laktory-overview
+description: Laktory Overview
+backend: terraform
+resources:
+  databricks_notebooks:
+    notebook-001-dlt:
+      source: ./notebooks/sample-001/dlt_laktory_pl.py
+    notebook-001-pl:
+      source: ./notebooks/sample-001/job_laktory_pl.py
+  pipelines:
+    pl-sample-001: ${include../pipeline.yaml}
+  providers:
+    databricks:
+      host: ${vars.DATABRICKS_HOST}
+      token: ${vars.DATABRICKS_TOKEN}
+environments:
+  dev:
+    variables:
+      env: dev
+      is_dev: True

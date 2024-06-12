@@ -1,0 +1,130 @@
+name: pl-sample-001
+dataframe_type: SPARK
+nodes:
+- name: brz_stock_prices
+  layer: BRONZE
+  source:
+    path: /Volumes/dev/sources/landing/events/yahoo-finance/stock_price/
+    as_stream: false
+  sink:
+    path: /Volumes/dev/sources/landing/tables/brz_stock_prices/
+    mode: OVERWRITE
+
+- name: slv_stock_prices
+  layer: SILVER
+  source:
+    node_name: brz_stock_prices
+    as_stream: false
+  sink:
+    path: /Volumes/dev/sources/landing/tables/slv_stock_prices/
+    mode: OVERWRITE
+  transformer:
+    nodes:
+    - with_columns:
+      - name: created_at
+        type: timestamp
+        sql_expr: data._created_at
+
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+
+      - name: name
+        type: string
+        sql_expr: data.symbol
+
+      - name: open
+        type: double
+        sql_expr: data.open
+
+      - name: close
+        type: double
+        sql_expr: data.close
+
+      - name: low
+        type: double
+        sql_expr: data.low
+
+      - name: high
+        type: double
+        sql_expr: data.high
+
+- name: brz_stock_metadata
+  layer: BRONZE
+  source:
+    path: /Volumes/dev/sources/landing/events/yahoo-finance/stock_metadata/
+  sink:
+    path: /Volumes/dev/sources/landing/tables/brz_stock_metadata/
+    mode: OVERWRITE
+
+- name: slv_stock_metadata
+  layer: SILVER
+  source:
+    node_name: brz_stock_metadata
+  sink:
+    path: /Volumes/dev/sources/landing/tables/slv_stock_metadata/
+    mode: OVERWRITE
+  transformer:
+    nodes:
+    - with_columns:
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+      - name: currency
+        type: string
+        sql_expr: data.currency
+      - name: first_traded
+        type: timestamp
+        sql_expr: data.firstTradeDate
+
+- name: slv_stocks
+  layer: SILVER
+  drop_source_columns: False
+  source:
+    node_name: slv_stock_prices
+    as_stream: false
+  sink:
+    path: /Volumes/dev/sources/landing/tables/slv_stocks/
+    mode: OVERWRITE
+  transformer:
+    nodes:
+    - func_name: laktory.smart_join
+      func_kwargs:
+        other:
+          node_name: slv_stock_metadata
+          selects:
+            - symbol
+            - currency
+            - first_traded
+        "on":
+          - symbol
+    - with_column:
+        name: day_id
+        expr: F.date_trunc("dd", "created_at")
+
+- name: gld_stocks_prices_by_1d
+  layer: GOLD
+  source:
+    node_name: slv_stocks
+    as_stream: false
+  sink:
+    path: /Volumes/dev/sources/landing/tables/gld_stocks_prices_by_1d/
+    mode: OVERWRITE
+  transformer:
+    nodes:
+    - func_name: laktory.groupby_and_agg
+      func_kwargs:
+        groupby_columns:
+          - symbol
+          - day_id
+        agg_expressions:
+          - name: count
+            expr: F.count('symbol')
+          - name: low
+            expr: F.min('low')
+          - name: high
+            expr: F.max('high')
+          - name: open
+            expr: F.first('open')
+          - name: close
+            expr: F.last('close')
