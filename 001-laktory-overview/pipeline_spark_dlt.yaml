@@ -1,0 +1,150 @@
+name: pl-sample-001
+dataframe_type: SPARK
+
+orchestrator: DLT
+
+dlt:
+  resource_name: dlt-sample-001
+  catalog: sandbox
+  target: sample-001
+  development: True
+  configuration:
+    pipeline_name: pl-sample-001
+
+  clusters:
+    - name : default
+      node_type_id: Standard_DS3_v2
+      autoscale:
+        min_workers: 1
+        max_workers: 2
+
+  libraries:
+    - notebook:
+        path: /.laktory/sample-001/dlt_laktory_pl.py
+
+  access_controls:
+    - group_name: account users
+      permission_level: CAN_VIEW
+    - group_name: role-engineers
+      permission_level: CAN_RUN
+
+nodes:
+- name: brz_stock_prices
+  layer: BRONZE
+  source:
+    path: /Volumes/dev/sources/landing/events/yahoo-finance/stock_price/
+    as_stream: false
+  sink:
+    table_name: brz_stock_prices
+
+- name: slv_stock_prices
+  layer: SILVER
+  source:
+    node_name: brz_stock_prices
+    as_stream: false
+  sink:
+    table_name: slv_stock_prices
+  transformer:
+    nodes:
+    - with_columns:
+      - name: created_at
+        type: timestamp
+        sql_expr: data._created_at
+
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+
+      - name: name
+        type: string
+        sql_expr: data.symbol
+
+      - name: open
+        type: double
+        sql_expr: data.open
+
+      - name: close
+        type: double
+        sql_expr: data.close
+
+      - name: low
+        type: double
+        sql_expr: data.low
+
+      - name: high
+        type: double
+        sql_expr: data.high
+
+- name: brz_stock_metadata
+  layer: BRONZE
+  source:
+    path: /Volumes/dev/sources/landing/events/yahoo-finance/stock_metadata/
+  sink:
+      table_name: brz_stock_metadata
+
+- name: slv_stock_metadata
+  layer: SILVER
+  source:
+    node_name: brz_stock_metadata
+  transformer:
+    nodes:
+    - with_columns:
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+      - name: currency
+        type: string
+        sql_expr: data.currency
+      - name: first_traded
+        type: timestamp
+        sql_expr: data.firstTradeDate
+
+- name: slv_stocks
+  layer: SILVER
+  drop_source_columns: False
+  source:
+    node_name: slv_stock_prices
+    as_stream: false
+  sink:
+      table_name: slv_stocks
+  transformer:
+    nodes:
+    - func_name: laktory.smart_join
+      func_kwargs:
+        other:
+          node_name: slv_stock_metadata
+          selects:
+            - symbol
+            - currency
+            - first_traded
+        "on":
+          - symbol
+    - with_column:
+        name: day_id
+        expr: F.date_trunc("dd", "created_at")
+
+- name: gld_stocks_prices_by_1d
+  layer: GOLD
+  source:
+    node_name: slv_stocks
+    as_stream: false
+  sink:
+    table_name: gld_stocks_prices_by_1d
+  transformer:
+    nodes:
+    - func_name: laktory.groupby_and_agg
+      func_kwargs:
+        groupby_columns:
+          - symbol
+          - day_id
+        agg_expressions:
+          - name: count
+            expr: F.count('symbol')
+          - name: low
+            expr: F.min('low')
+          - name: high
+            expr: F.max('high')
+          - name: open
+            expr: F.first('open')
+          - name: close
+            expr: F.last('close')
