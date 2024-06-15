@@ -8,7 +8,7 @@ resources:
     notebook-001-pl:
       source: ./notebooks/sample-001/job_laktory_pl.py
   pipelines:
-    pl-sample-001: ${include../pipeline.yaml}
+    pl-sample-001: ${include../pipeline_spark_dlt.yaml}
   providers:
     databricks:
       host: ${vars.DATABRICKS_HOST}
