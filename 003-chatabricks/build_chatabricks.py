@@ -8,7 +8,7 @@ from langchain_community.chat_models import ChatDatabricks
 from langchain.prompts import MessagesPlaceholder
 
 llm = ChatDatabricks(
-    endpoint="dbrx_instruct",
+    endpoint="databricks-dbrx-instruct",
     temperature=0.0,
     top_k=0.95,
 )
