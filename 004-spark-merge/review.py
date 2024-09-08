@@ -33,9 +33,9 @@ df["series"] = df["method"]
 loc = df["is_incremental"]
 df.loc[loc, "series"] = "increment " + df.loc[loc, "series"]
 loc = ~df["is_incremental"]
-df.loc[loc, "series"] = "dump " + df.loc[loc, "series"]
+df.loc[loc, "series"] = "snapshot " + df.loc[loc, "series"]
 
-df["series"] = df["series"].replace("increment merge", "increment merge (CDF)")
+df["series"] = df["series"].replace("increment merge", "CDC merge")
 
 # --------------------------------------------------------------------------- #
 # Plot Data                                                                   #
@@ -43,9 +43,9 @@ df["series"] = df["series"].replace("increment merge", "increment merge (CDF)")
 
 series_names = [
     "increment append",
-    "increment merge (CDF)",
-    "dump overwrite",
-    "dump merge",
+    "CDC merge",
+    "snapshot overwrite",
+    "snapshot merge",
 ]
 
 fig = go.Figure()
@@ -69,7 +69,7 @@ for k in series_names:
     _df = df[df["series"] == k].sort_values("size")
     x = _df["labels"].values
     y = _df["duration"].values
-    s = df[df["series"] == "dump overwrite"].sort_values("size")["duration"].values
+    s = df[df["series"] == "snapshot overwrite"].sort_values("size")["duration"].values
     trace = go.Bar(x=_df["labels"], y=y / s, name=k)
     fig.add_trace(trace)
 
