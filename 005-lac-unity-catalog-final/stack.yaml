@@ -28,9 +28,6 @@ resources:
   providers:
 
     # Account Provider
-    # The account-level provider configuration varies by cloud provider.
-    # For more details, visit
-    # https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html
     databricks:
       host: https://accounts.azuredatabricks.net
       account_id: ${vars.DATABRICKS_ACCOUNT_ID}
@@ -40,8 +37,6 @@ resources:
       auth_type: azure-client-secret
 
     # Workspace Providers
-    # Required for the deployment of catalogs to bind a catalog to a specific
-    # workspace, even if catalogs may be shared across all workspaces.
     databricks.dev:
       alias: dev
       host: ${vars.DATABRICKS_HOST_DEV}
