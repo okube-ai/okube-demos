@@ -1,0 +1,6 @@
+service-principal-neptune-dev:
+  lookup_existing:
+    application_id: "1f8005d3-5efa-476b-9eb5-11755fea1128"
+  group_ids:
+    - ${resources.group-workspace-admins.id}
+    - ${resources.group-metastore-admins.id}
