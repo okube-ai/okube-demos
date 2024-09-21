@@ -22,5 +22,3 @@ pipeline.execute()
 # Preview
 df = pipeline.nodes[-1].output_df
 print(df)
-
-
