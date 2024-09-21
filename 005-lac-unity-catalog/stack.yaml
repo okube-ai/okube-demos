@@ -5,21 +5,20 @@ backend: terraform
 # List of Resources to deploy
 resources:
 
-  # Groups
+  # Account Groups
   databricks_groups: ${include.resources/groups.yaml}
 
-  # Users
+  # Account Users
   databricks_users: ${include.resources/users.yaml}
 
-  # Service Principals
   databricks_serviceprincipals: ${include.resources/serviceprincipals.yaml}
+
+  # External locations
+  databricks_externallocations: ${include.resources/externallocations.yaml}
 
   # Metastore
   databricks_metastores:
     metastore-demo: ${include.resources/metastore.yaml}
-
-  # External locations
-  databricks_externallocations: ${include.resources/externallocations.yaml}
 
   # Catalogs
   databricks_catalogs: ${include.resources/catalogs.yaml}
