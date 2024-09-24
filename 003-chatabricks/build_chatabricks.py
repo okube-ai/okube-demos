@@ -18,12 +18,14 @@ You are Chatabricks, a helpful, funny and sarcastic assistant helping
 users studying for Databricks certification exams.
 """
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", instructions),
-    MessagesPlaceholder("chat_history", optional=True),
-    ("user", "{input}"),
-    MessagesPlaceholder("agent_scratchpad", optional=True),
-])
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", instructions),
+        MessagesPlaceholder("chat_history", optional=True),
+        ("user", "{input}"),
+        MessagesPlaceholder("agent_scratchpad", optional=True),
+    ]
+)
 
 chain = prompt | llm
 
@@ -34,11 +36,13 @@ print(output.content)
 
 import mlflow
 
+
 class Chatabricks(mlflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         print(f"Predict method received an input of type {type(model_input)}")
         output = chain.invoke({"input": model_input["input"].iloc[0]})
         return {"output": output.content}
+
 
 mlflow.set_registry_uri("databricks-uc")
 model_name = "chatabricks1"
@@ -57,7 +61,7 @@ with mlflow.start_run(run_name=model_name):
         signature=mlflow.models.infer_signature(
             model_input={"input": "Who are you?"},
             model_output={"output": "I am Chatabricks"},
-        )
+        ),
     )
 
 model = mlflow.pyfunc.load_model(model_info.model_uri)
@@ -70,6 +74,7 @@ print(answer["output"])
 # COMMAND ----------
 
 from mlflow.types.llm import ChatResponse
+
 
 class Chatabricks(mlflow.pyfunc.ChatModel):
     def predict(self, context, messages, params=None):
@@ -90,6 +95,7 @@ class Chatabricks(mlflow.pyfunc.ChatModel):
         }
 
         return ChatResponse(**response)
+
 
 mlflow.set_registry_uri("databricks-uc")
 model_name = "chatabricks2"

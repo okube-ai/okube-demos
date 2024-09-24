@@ -6,6 +6,7 @@ from laktory import models
 # Build Pipeline                                                              #
 # --------------------------------------------------------------------------- #
 
+
 def custom_transformer_node(df):
     df = df.rename({c: c.upper() for c in df.columns})
     df.with_columns(OPEN2=pl.sqrt("OPEN"))
@@ -22,7 +23,7 @@ stocks_brz = models.PipelineNode(
     sink=models.FileDataSink(
         path="./data/brz_stock_prices.parquet",
         format="PARQUET",
-    )
+    ),
 )
 
 stocks_slv = models.PipelineNode(
@@ -35,41 +36,45 @@ stocks_slv = models.PipelineNode(
         path="./data/slv_stock_prices.parquet",
         format="PARQUET",
     ),
-    transformer=models.PolarsChain(nodes=[
-        models.PolarsChainNode(with_columns=[
-            models.PolarsChainNodeColumn(
-                name="created_at",
-                type="timestamp",
-                sql_expr="data.created_at",
+    transformer=models.PolarsChain(
+        nodes=[
+            models.PolarsChainNode(
+                with_columns=[
+                    models.PolarsChainNodeColumn(
+                        name="created_at",
+                        type="timestamp",
+                        sql_expr="data.created_at",
+                    ),
+                    models.PolarsChainNodeColumn(
+                        name="symbol",
+                        sql_expr="data.symbol",
+                    ),
+                    models.PolarsChainNodeColumn(
+                        name="name",
+                        sql_expr="data.symbol",
+                    ),
+                    models.PolarsChainNodeColumn(
+                        name="open",
+                        type="double",
+                        sql_expr="data.open",
+                    ),
+                    models.PolarsChainNodeColumn(
+                        name="close",
+                        type="double",
+                        sql_expr="data.close",
+                    ),
+                    models.PolarsChainNodeColumn(
+                        name="low",
+                        type="double",
+                        sql_expr="data.high",
+                    ),
+                ]
             ),
-            models.PolarsChainNodeColumn(
-                name="symbol",
-                sql_expr="data.symbol",
+            models.PolarsChainNode(
+                func_name="capitalize_columns",
             ),
-            models.PolarsChainNodeColumn(
-                name="name",
-                sql_expr="data.symbol",
-            ),
-            models.PolarsChainNodeColumn(
-                name="open",
-                type="double",
-                sql_expr="data.open",
-            ),
-            models.PolarsChainNodeColumn(
-                name="close",
-                type="double",
-                sql_expr="data.close",
-            ),
-            models.PolarsChainNodeColumn(
-                name="low",
-                type="double",
-                sql_expr="data.high",
-            ),
-        ]),
-        models.PolarsChainNode(
-            func_name="capitalize_columns",
-        )
-    ])
+        ]
+    ),
 )
 
 pl = models.Pipeline(
@@ -78,7 +83,7 @@ pl = models.Pipeline(
     nodes=[
         stocks_brz,
         stocks_slv,
-    ]
+    ],
 )
 
 # --------------------------------------------------------------------------- #
