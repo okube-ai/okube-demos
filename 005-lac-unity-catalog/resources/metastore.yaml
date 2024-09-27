@@ -3,11 +3,11 @@ cloud: azure
 storage_root: abfss://metastore-demo@o3stglakehousedev.dfs.core.windows.net/
 region: canadacentral
 force_destroy: True
-owner: metastore-admins
-workspace_provider: ${resources.databricks.dev}
+owner: ${resources.group-metastore-admins.display_name}
 workspace_assignments:
   - workspace_id: ${vars.workspace_id_dev}
-#  - workspace_id: ${vars.workspace_id_prd}
+  - workspace_id: ${vars.workspace_id_prd}
+grants_provider: ${resources.databricks.dev}
 grants:
   - principal: metastore-admins
     privileges:
@@ -22,19 +22,22 @@ data_accesses:
       access_connector_id: /subscriptions/c8b10a15-5bb2-4c3f-988a-8ec6e60614bb/resourceGroups/o3-rg-lakehouse-dev/providers/Microsoft.Databricks/accessConnectors/o3-dbksac-lakehouse-dev
     force_destroy: True
     is_default: True
+    options:
+      ignore_changes:
+        - is_default  # This is required as state default state does not get saved on Databricks/IaC side
     grants:
       - principal: metastore-admins
         privileges:
           - CREATE_EXTERNAL_LOCATION
-#  - name: lakehouse-prd
-#    azure_managed_identity:
-#      access_connector_id: /subscriptions/c8b10a15-5bb2-4c3f-988a-8ec6e60614bb/resourceGroups/o3-rg-lakehouse-prd/providers/Microsoft.Databricks/accessConnectors/o3-dbksac-lakehouse-prd
-#    force_destroy: False
-#    is_default: False
-#    grants:
-#      - principal: metastore-admins
-#        privileges:
-#          - CREATE_EXTERNAL_LOCATION
+  - name: lakehouse-prd
+    azure_managed_identity:
+      access_connector_id: /subscriptions/c8b10a15-5bb2-4c3f-988a-8ec6e60614bb/resourceGroups/o3-rg-lakehouse-prd/providers/Microsoft.Databricks/accessConnectors/o3-dbksac-lakehouse-prd
+    force_destroy: False
+    is_default: False
+    grants:
+      - principal: metastore-admins
+        privileges:
+          - CREATE_EXTERNAL_LOCATION
 options:
   depends_on:
     - ${resources.group-metastore-admins}

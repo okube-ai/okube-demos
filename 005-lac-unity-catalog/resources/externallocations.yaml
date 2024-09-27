@@ -6,11 +6,10 @@ external-location-landing-dev:
     options:
         provider: ${resources.databricks.dev}
 
-#external-location-landing-prd:
-#    name: external-location-landing-prd
-#    credential_name: ${metastore-data-access-lakehouse-prd.name}
-#    force_destroy: True
-#    url: ${vars.landing_storage_location_prd}
-#    options:
-#        provider: ${resources.provider-workspace-neptune}
-
+external-location-landing-prd:
+    name: external-location-landing-prd
+    credential_name: ${resources.metastore-data-access-lakehouse-prd.name}
+    force_destroy: True
+    url: ${vars.landing_storage_location_prd}
+    options:
+        provider: ${resources.databricks.prd}

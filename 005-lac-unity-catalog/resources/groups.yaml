@@ -1,13 +1,25 @@
+# To assign group to a workspace, identity federation must be enabled on these
+# workspaces. For accounts created after November 8, 2023, this is enabled
+# by default. Otherwise, you need to assign a metastore to a workspace
+# before being able to assign groups to the workspace.
+# More details here: https://docs.databricks.com/en/admin/users-groups/index.html#how-do-admins-enable-identity-federation-on-a-workspace
+
 group-laktory-friends:
   display_name: laktory-friends
   workspace_permission_assignments:
     - workspace_id: ${vars.workspace_id_dev}
+    - workspace_id: ${vars.workspace_id_prd}
+
 group-metastore-admins:
   display_name: metastore-admins
   workspace_permission_assignments:
     - workspace_id: ${vars.workspace_id_dev}
+    - workspace_id: ${vars.workspace_id_prd}
+
 group-workspace-admins:
   display_name: workspace-admins
   workspace_permission_assignments:
     - workspace_id: ${vars.workspace_id_dev}
+      permissions: [ADMIN]
+    - workspace_id: ${vars.workspace_id_prd}
       permissions: [ADMIN]
