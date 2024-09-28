@@ -1,0 +1,3 @@
+dbfs-file-settings:
+  path: /Workspace/.laktory/settings.json
+  source: ./dbfsfiles/settings.json

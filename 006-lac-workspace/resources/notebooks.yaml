@@ -1,0 +1,7 @@
+notebook-list-secrets:
+  source: ./notebooks/utils/list_secrets.py
+  access_controls:
+    - group_name: users
+      permission_level: CAN_READ
+    - group_name: laktory-friends
+      permission_level: CAN_RUN
