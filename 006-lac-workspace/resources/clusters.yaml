@@ -1,0 +1,13 @@
+cluster-default:
+  name: laktory-quickstart
+  spark_version: 15.3.x-scala2.12
+  data_security_mode: USER_ISOLATION
+  node_type_id: Standard_DS3_v2
+  autoscale:
+    min_workers: 1
+    max_workers: 2
+  autotermination_minutes: 15
+  is_pinned: True
+  no_wait: True
+  spark_env_vars:
+    LAKTORY_WORKSPACE_ENV: ${vars.env}
