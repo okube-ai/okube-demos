@@ -14,13 +14,13 @@ resources:
   # SQL Warehouses
   databricks_warehouses: ${include.resources/warehouses.yaml}
 
-  # SQL Warehouses
+  # Clusters
   databricks_clusters: ${include.resources/clusters.yaml}
 
   # Notebooks
   databricks_notebooks: ${include.resources/notebooks.yaml}
 
-  # Notebooks
+  # DBFS Files
   databricks_dbfsfiles: ${include.resources/dbfsfiles.yaml}
 
   # Databricks Provider Configuration
