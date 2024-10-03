@@ -19,8 +19,8 @@ resources:
   #   - Deployed resources depend on selected orchestrator
   #   - pl-stocks-sql: Deployed as a Job with SQL transformations
   #   - pl-stocks-spark-dlt: Deployed as a Delta Live Tables with spark transformations
-  pipelines:
-    pl-stocks-sql: ${include.resources/pl-stocks-sql.yaml}
+#  pipelines:
+#    pl-stocks-sql: ${include.resources/pl-stocks-sql.yaml}
 
   # Databricks Provider Configuration
   providers:
