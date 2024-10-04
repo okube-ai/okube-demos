@@ -1,0 +1,89 @@
+#
+# This is an example of a pipeline that uses Databricks Jobs as the
+# orchestrator. It runs in batch mode (as_stream = `False`), meaning
+# that each table is re-computed entirely at each run.
+#
+name: pl-stocks-job
+
+# Select Orchestrator
+orchestrator: DATABRICKS_JOB
+
+# Configure Orchestrator
+databricks_job:
+  name: job-pl-stocks
+
+# Define nodes (each node is a table or a view)
+nodes:
+
+# Bronze Table
+- name: brz_stock_prices
+  source:
+    path: dbfs:/Workspace/.laktory/data/stock_prices/
+    as_stream: false
+    format: JSON
+  sink:
+    table_name: brz_stock_prices
+    mode: OVERWRITE
+
+# Silver Table
+- name: slv_stock_prices
+  source:
+    node_name: brz_stock_prices
+    as_stream: false
+  sink:
+    table_name: slv_stock_prices
+    mode: OVERWRITE
+
+  # The transformer is a chain of SQL statements and / or serialized spark
+  # functions. In this case, we use SQL to select some columns from the
+  # source and we use Spark df.drop_duplicates to clean the data.
+  transformer:
+    nodes:
+    - sql_expr: ${include.sql/slv_stock_prices.sql}
+    - func_name: drop_duplicates   # -> df.drop_duplicates(subset=["created_at", "symbol"])
+      func_kwargs:
+        subset: ["created_at", "symbol"]
+
+
+- name: brz_stock_metadata
+  source:
+    path: dbfs:/Workspace/.laktory/data/stock_metadata/
+    multiline: False
+    format: JSON
+  sink:
+    table_name: brz_stock_metadata
+    mode: OVERWRITE
+
+- name: slv_stock_metadata
+  source:
+    node_name: brz_stock_metadata
+  sink:
+    table_name: slv_stock_metadata
+    mode: OVERWRITE
+  drop_source_columns: True
+  transformer:
+    nodes:
+    - with_columns:
+      - name: symbol
+        type: string
+        sql_expr: data.symbol
+      - name: currency
+        type: string
+        sql_expr: data.currency
+      - name: first_traded
+        type: timestamp
+        sql_expr: data.firstTradeDate
+
+- name: slv_stocks
+  source:
+    node_name: slv_stock_prices
+    as_stream: false
+  sink:
+    table_name: slv_stocks
+    mode: OVERWRITE
+  transformer:
+    nodes:
+    - sql_expr: ${include.sql/slv_stocks.sql}
+    - with_column:
+        name: day_id
+        expr: F.date_trunc("day", "created_at")  # -> df = df.withColumn("day_id", F.date_trunc("day", "created_at"))
