@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------- #
 
 catalog-lqs-dev:
-  name: lqs-dev
+  name: lqs_dev
   isolation_mode: OPEN
   grants:
     - principal: account users
@@ -38,7 +38,7 @@ catalog-lqs-dev:
 # --------------------------------------------------------------------------- #
 
 catalog-lqs-prd:
-  name: lqs-prd
+  name: lqs_prd
   isolation_mode: OPEN
   grants:
     - principal: account users
