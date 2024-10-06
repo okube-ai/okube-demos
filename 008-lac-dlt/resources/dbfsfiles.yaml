@@ -1,0 +1,7 @@
+dbfs-file-stock-prices:
+  path: /Workspace/.laktory/data/stock_prices/stock_prices.json
+  source: ./data/stock_prices.json
+
+dbfs-file-stock-metadata:
+  path: /Workspace/.laktory/data/stock_metadata/stock_metadata.json
+  source: ./data/stock_metadata.json
