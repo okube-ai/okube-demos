@@ -47,9 +47,9 @@ for udf in pl.udfs:
 # --------------------------------------------------------------------------- #
 
 if node_name:
-    pl.nodes_dict[node_name].execute(spark=spark, write_sink=True, udfs=udfs)
+    pl.nodes_dict[node_name].execute(spark=spark, write_sink=False, udfs=udfs)
 else:
-    pl.execute(spark=spark, write_sinks=True, udfs=udfs)
+    pl.execute(spark=spark, write_sinks=False, udfs=udfs)
 
 # --------------------------------------------------------------------------- #
 # Display Results                                                             #
