@@ -25,7 +25,7 @@ node_name = None
 with open(stack_filepath, "r") as fp:
     stack = models.Stack.model_validate_yaml(fp)
 
-pl = stack.get_env("dev").resources.pipelines["pl-stocks-job"]
+pl = stack.get_env("dev").resources.pipelines["pl-stocks-dlt"]
 
 print(pl)
 
